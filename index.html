@@ -3,26 +3,26 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>Magnet Vault ✦ Butterfly Edition</title>
+<title>Magnet Vault ✦ Butterfly Edition (Local)</title>
 <style>
   /* ── Google Fonts ─────────────────────────────────────────────── */
   @import url('https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Dancing+Script:wght@600&display=swap');
 
   /* ── CSS Variables (Light Theme Transformation) ──────────────── */
   :root {
-    --pink:       #db2777; /* Deeper pink for excellent light-mode contrast */
+    --pink:       #db2777;
     --pink-light: #fdf2f8;
     --pink-deep:  #be185d;
-    --blue:       #4f46e5; /* Strong indigo-blue */
+    --blue:       #4f46e5;
     --blue-light: #e0e7ff;
     --blue-deep:  #3730a3;
-    --bg:         #faf6fe; /* Bright, soft pastel pink/lavender tint */
-    --surface:    #f3e8ff; /* Lavender mist */
-    --card:       #ffffff; /* Pure white cards */
-    --border:     rgba(219,39,119,0.25); /* Subtle pink borders */
+    --bg:         #faf6fe;
+    --surface:    #f3e8ff;
+    --card:       #ffffff;
+    --border:     rgba(219,39,119,0.25);
     --border-blue:rgba(79,70,229,0.25);
-    --fg:         #2e1049; /* Deep royal violet for readable text */
-    --muted:      #6b4e8d; /* Rich medium purple-gray for secondary text */
+    --fg:         #2e1049;
+    --muted:      #6b4e8d;
     --destructive:#e11d48;
     --radius:     0.6rem;
     --mono:       'Space Mono', monospace;
@@ -61,8 +61,6 @@
     75%  { transform: translate(15px, 35px) rotate(10deg); }
     100% { transform: translate(0, 0) rotate(0deg); }
   }
-  .spin { animation: spin 1s linear infinite; display: inline-block; }
-  @keyframes spin { from { transform:rotate(0deg); } to { transform:rotate(360deg); } }
 
   /* ── Reset ───────────────────────────────────────────────────── */
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
@@ -173,14 +171,14 @@
     animation: shimmer 4s linear infinite;
   }
 
-  /* ── Inputs ──────────────────────────────────────────────────── */
+  /* ── Inputs & Selects ─────────────────────────────────────────── */
   .input-wrap { position: relative; flex: 1; }
   .input-icon {
     position: absolute; left: 0.65rem; top: 50%; transform: translateY(-50%);
     pointer-events: none; color: var(--muted);
     width: 1rem; height: 1rem;
   }
-  input[type="text"], textarea {
+  input[type="text"], input[type="number"], select, textarea {
     width: 100%;
     background: #ffffff;
     border: 1.5px solid rgba(129,140,248,0.3);
@@ -192,12 +190,21 @@
     outline: none;
     transition: border-color 0.2s, box-shadow 0.2s;
   }
+  select {
+    padding-left: 0.75rem;
+    appearance: none;
+    background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%236b4e8d' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
+    background-repeat: no-repeat;
+    background-position: right 0.75rem center;
+    background-size: 1rem;
+    padding-right: 2.2rem;
+  }
   textarea {
     padding-left: 0.75rem;
     resize: vertical;
     min-height: 4.5rem;
   }
-  input[type="text"]:focus, textarea:focus {
+  input[type="text"]:focus, input[type="number"]:focus, select:focus, textarea:focus {
     border-color: var(--pink);
     box-shadow: 0 0 0 3px rgba(219,39,119,0.15);
   }
@@ -318,6 +325,7 @@
     box-shadow: 0 2px 6px rgba(107,78,141,0.04);
     transition: background 0.15s, border-color 0.15s, transform 0.15s;
     position: relative;
+    user-select: none;
   }
   .link-row:hover {
     background: #fff9fc;
@@ -325,8 +333,13 @@
     transform: translateY(-1px);
     box-shadow: 0 4px 10px rgba(219,39,119,0.08);
   }
+  .link-row.selected {
+    background: var(--pink-light) !important;
+    border-color: var(--pink) !important;
+    box-shadow: 0 0 0 2px rgba(219, 39, 119, 0.3) !important;
+  }
   .link-row-inner { display: flex; align-items: flex-start; gap: 0.5rem; }
-  .link-meta { flex: 1; min-width: 0; }
+  .link-meta { flex: 1; min-width: 0; user-select: text; }
   .link-title-wrap { display: flex; flex-wrap: wrap; align-items: center; gap: 0.35rem; margin-bottom: 0.25rem; }
   .link-title {
     font-size: 0.8rem; font-weight: 700; color: var(--fg);
@@ -357,7 +370,7 @@
     opacity: 0;
     transition: opacity 0.15s;
   }
-  .link-row:hover .link-actions { opacity: 1; }
+  .link-row:hover .link-actions, .link-row.selected .link-actions { opacity: 1; }
   .icon-btn {
     width: 1.8rem; height: 1.8rem;
     border-radius: 0.35rem;
@@ -374,60 +387,80 @@
   .icon-btn.del { border-color: rgba(225,29,72,0.3); color: var(--destructive); }
   .icon-btn.del:hover { background: #fff1f2; border-color: var(--destructive); }
 
-  /* ── Collapsible ─────────────────────────────────────────────── */
-  details {
+  /* ── Group blocks (split view) ─────────────────────────────────── */
+  #link-container { display: flex; flex-direction: column; gap: 1rem; }
+  .group-block {
     border: 1.5px solid var(--border);
     border-radius: var(--radius);
-    background: #ffffff;
-    box-shadow: 0 2px 6px rgba(107,78,141,0.04);
+    background: rgba(255,255,255,0.4);
+    overflow: hidden;
+  }
+  .group-header {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 0.55rem 0.75rem;
+    background: linear-gradient(90deg, rgba(219,39,119,0.07), rgba(79,70,229,0.07));
+    border-bottom: 1.5px solid var(--border); gap: 0.5rem;
+  }
+  .group-title {
+    font-size: 0.72rem; font-weight: 700; color: var(--fg);
+    display: flex; align-items: center; gap: 0.4rem;
+  }
+  .group-badge {
+    background: linear-gradient(135deg, var(--pink), var(--blue));
+    color: #fff; border-radius: 0.25rem; padding: 0.1rem 0.45rem;
+    font-size: 0.62rem; font-weight: 700;
+  }
+  .group-actions { display: flex; gap: 0.35rem; align-items: center; }
+  .group-copy-btn {
+    display: inline-flex; align-items: center; gap: 0.35rem;
+    border-radius: var(--radius); padding: 0.3rem 0.65rem;
+    font-family: var(--mono); font-size: 0.65rem; font-weight: 700;
+    cursor: pointer; white-space: nowrap; transition: all 0.15s;
+    border: 1.5px solid var(--border); background: #ffffff; color: var(--fg);
+    box-shadow: 0 1px 4px rgba(107,78,141,0.06);
+  }
+  .group-copy-btn svg { width: 0.75rem; height: 0.75rem; }
+  .group-copy-btn:hover {
+    border-color: var(--pink); background: var(--pink-light);
+    box-shadow: 0 3px 8px rgba(219,39,119,0.15);
+  }
+  .group-block .link-list-wrap { border: none; border-radius: 0; background: transparent; animation: none; }
+  .empty-state-small { padding: 1.25rem 1rem; font-size: 0.72rem; }
+
+  /* ── Collapsible ─────────────────────────────────────────────── */
+  details {
+    border: 1.5px solid var(--border); border-radius: var(--radius);
+    background: #ffffff; box-shadow: 0 2px 6px rgba(107,78,141,0.04);
   }
   details summary {
-    cursor: pointer;
-    padding: 0.75rem 0.875rem;
-    font-size: 0.8rem;
-    font-weight: 700;
-    color: var(--fg);
-    list-style: none;
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-    user-select: none;
+    cursor: pointer; padding: 0.75rem 0.875rem; font-size: 0.8rem;
+    font-weight: 700; color: var(--fg); list-style: none;
+    display: flex; align-items: center; gap: 0.5rem; user-select: none;
   }
   details summary::-webkit-details-marker { display: none; }
-  .chevron {
-    width: 0.85rem; height: 0.85rem;
-    color: var(--muted);
-    transition: transform 0.2s;
-    flex-shrink: 0;
-  }
+  .chevron { width: 0.85rem; height: 0.85rem; color: var(--muted); transition: transform 0.2s; flex-shrink: 0; }
   details[open] .chevron { transform: rotate(90deg); }
   .collapsible-body {
-    border-top: 1.5px solid var(--border);
-    padding: 0.875rem;
+    border-top: 1.5px solid var(--border); padding: 0.875rem;
     background: rgba(243,232,255,0.25);
   }
   .collapsible-body p.hint {
-    font-size: 0.72rem;
-    color: var(--muted);
-    line-height: 1.6;
-    margin-bottom: 0.6rem;
+    font-size: 0.72rem; color: var(--muted); line-height: 1.6; margin-bottom: 0.6rem;
   }
 
   /* ── Priority List ───────────────────────────────────────────── */
   .priority-list { display: flex; flex-direction: column; gap: 0.35rem; margin-bottom: 0.75rem; }
   .priority-item {
-    display: flex; align-items: center; gap: 0.5rem;
-    background: #ffffff; border: 1.5px solid var(--border);
-    padding: 0.4rem 0.6rem; border-radius: var(--radius);
-    transition: border-color 0.15s;
+    display: flex; align-items: center; gap: 0.5rem; background: #ffffff;
+    border: 1.5px solid var(--border); padding: 0.4rem 0.6rem;
+    border-radius: var(--radius); transition: border-color 0.15s;
   }
   .priority-item:hover { border-color: var(--pink); }
   .priority-word { flex: 1; font-weight: 700; font-size: 0.75rem; color: var(--fg); }
   .prio-btn {
-    width: 1.5rem; height: 1.5rem; border-radius: 0.25rem;
-    background: #ffffff; border: 1.5px solid rgba(129,140,248,0.2); color: var(--muted);
-    display: flex; align-items: center; justify-content: center; cursor: pointer;
-    transition: all 0.15s;
+    width: 1.5rem; height: 1.5rem; border-radius: 0.25rem; background: #ffffff;
+    border: 1.5px solid rgba(129,140,248,0.2); color: var(--muted);
+    display: flex; align-items: center; justify-content: center; cursor: pointer; transition: all 0.15s;
   }
   .prio-btn svg { width: 0.8rem; height: 0.8rem; }
   .prio-btn:hover:not(:disabled) { border-color: var(--pink); color: var(--pink); background: var(--pink-light); }
@@ -441,117 +474,58 @@
 
   /* ── Bookmarklet ─────────────────────────────────────────────── */
   .bookmarklet-link {
-    display: inline-flex;
-    align-items: center;
-    gap: 0.4rem;
-    border: 1.5px solid var(--border);
-    background: var(--pink-light);
-    color: var(--pink);
-    border-radius: var(--radius);
-    padding: 0.45rem 0.85rem;
-    font-family: var(--mono);
-    font-size: 0.72rem;
-    font-weight: 700;
-    cursor: grab;
-    text-decoration: none;
-    margin-bottom: 0.75rem;
-    box-shadow: 0 2px 5px rgba(219,39,119,0.08);
+    display: inline-flex; align-items: center; gap: 0.4rem;
+    border: 1.5px solid var(--border); background: var(--pink-light); color: var(--pink);
+    border-radius: var(--radius); padding: 0.45rem 0.85rem; font-family: var(--mono);
+    font-size: 0.72rem; font-weight: 700; cursor: grab; text-decoration: none;
+    margin-bottom: 0.75rem; box-shadow: 0 2px 5px rgba(219,39,119,0.08);
   }
   .bookmarklet-link:active { cursor: grabbing; }
   .bookmarklet-link svg { width: 0.8rem; height: 0.8rem; }
-  .bookmarklet-label {
-    font-size: 0.6rem; text-transform: uppercase; letter-spacing: 0.08em;
-    color: var(--muted); margin-bottom: 0.3rem;
-  }
+  .bookmarklet-label { font-size: 0.6rem; text-transform: uppercase; letter-spacing: 0.08em; color: var(--muted); margin-bottom: 0.3rem; }
   pre.bm-code {
-    max-height: 8rem; overflow: auto;
-    background: #ffffff;
-    border: 1.5px solid var(--border);
-    border-radius: var(--radius);
-    padding: 0.5rem 0.65rem;
-    font-size: 0.6rem;
-    color: var(--muted);
-    line-height: 1.5;
-    white-space: pre-wrap;
-    word-break: break-all;
+    max-height: 8rem; overflow: auto; background: #ffffff; border: 1.5px solid var(--border);
+    border-radius: var(--radius); padding: 0.5rem 0.65rem; font-size: 0.6rem; color: var(--muted);
+    line-height: 1.5; white-space: pre-wrap; word-break: break-all;
   }
   pre.bm-code::-webkit-scrollbar { height: 3px; }
   pre.bm-code::-webkit-scrollbar-thumb { background: var(--border); }
-  .accent { color: var(--blue-deep); font-weight: 700; }
 
   /* ── Toasts ──────────────────────────────────────────────────── */
   #toast-stack {
-    position: fixed; bottom: 1.25rem; left: 50%;
-    transform: translateX(-50%);
-    z-index: 999;
-    display: flex; flex-direction: column; gap: 0.5rem; align-items: center;
-    pointer-events: none;
-    width: min(22rem, 90vw);
+    position: fixed; bottom: 1.25rem; left: 50%; transform: translateX(-50%);
+    z-index: 999; display: flex; flex-direction: column; gap: 0.5rem; align-items: center;
+    pointer-events: none; width: min(22rem, 90vw);
   }
   .toast {
-    width: 100%;
-    display: flex; align-items: center; gap: 0.5rem;
-    padding: 0.6rem 0.85rem;
-    border-radius: var(--radius);
-    font-size: 0.72rem; font-weight: 700;
-    pointer-events: auto;
-    animation: toastIn 0.3s ease both;
-    border: 1.5px solid;
-    box-shadow: 0 4px 12px rgba(107,78,141,0.15);
+    width: 100%; display: flex; align-items: center; gap: 0.5rem;
+    padding: 0.6rem 0.85rem; border-radius: var(--radius); font-size: 0.72rem;
+    font-weight: 700; pointer-events: auto; animation: toastIn 0.3s ease both;
+    border: 1.5px solid; box-shadow: 0 4px 12px rgba(107,78,141,0.15);
   }
-  .toast.ok {
-    background: #ffffff;
-    border-color: var(--pink);
-    color: var(--pink);
-  }
-  .toast.error {
-    background: #ffffff;
-    border-color: var(--destructive);
-    color: var(--destructive);
-  }
+  .toast.ok { background: #ffffff; border-color: var(--pink); color: var(--pink); }
+  .toast.error { background: #ffffff; border-color: var(--destructive); color: var(--destructive); }
   .toast svg { width: 0.85rem; height: 0.85rem; flex-shrink: 0; }
 
   /* ── Butterfly SVG icon in header ────────────────────────────── */
-  .butterfly-icon {
-    width: 1.5rem; height: 1.5rem;
-    animation: wingFlap 1.2s ease-in-out infinite;
-  }
-
-  /* ── Glitter dots scattered ──────────────────────────────────── */
-  .glitter {
-    position: fixed;
-    width: 5px;
-    height: 5px;
-    border-radius: 50%;
-    pointer-events: none;
-    z-index: 0;
-    animation: sparkle linear infinite;
-  }
+  .butterfly-icon { width: 1.5rem; height: 1.5rem; animation: wingFlap 1.2s ease-in-out infinite; }
+  .glitter { position: fixed; width: 5px; height: 5px; border-radius: 50%; pointer-events: none; z-index: 0; animation: sparkle linear infinite; }
 </style>
 </head>
 <body>
 
-<!-- Background atmosphere (Configured with 15 Floating Butterflies) -->
 <div class="sparkle-field"></div>
-<div class="butterfly-bg">🦋</div>
-<div class="butterfly-bg">🦋</div>
-<div class="butterfly-bg">🦋</div>
-<div class="butterfly-bg">🦋</div>
-<div class="butterfly-bg">🦋</div>
-<div class="butterfly-bg">🦋</div>
-<div class="butterfly-bg">🦋</div>
-<div class="butterfly-bg">🦋</div>
-<div class="butterfly-bg">🦋</div>
-<div class="butterfly-bg">🦋</div>
-<div class="butterfly-bg">🦋</div>
-<div class="butterfly-bg">🦋</div>
-<div class="butterfly-bg">🦋</div>
-<div class="butterfly-bg">🦋</div>
+<div class="butterfly-bg">🦋</div><div class="butterfly-bg">🦋</div>
+<div class="butterfly-bg">🦋</div><div class="butterfly-bg">🦋</div>
+<div class="butterfly-bg">🦋</div><div class="butterfly-bg">🦋</div>
+<div class="butterfly-bg">🦋</div><div class="butterfly-bg">🦋</div>
+<div class="butterfly-bg">🦋</div><div class="butterfly-bg">🦋</div>
+<div class="butterfly-bg">🦋</div><div class="butterfly-bg">🦋</div>
+<div class="butterfly-bg">🦋</div><div class="butterfly-bg">🦋</div>
 <div class="butterfly-bg">🦋</div>
 
 <div id="app">
 
-  <!-- Header -->
   <header>
     <span class="header-icon">
       <svg class="butterfly-icon" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
@@ -562,7 +536,6 @@
     <h1>✦ Magnet Vault ✦</h1>
   </header>
 
-  <!-- Filters -->
   <section class="filter-section" aria-label="Filters">
     <div class="filter-row">
       <div class="input-wrap">
@@ -581,25 +554,41 @@
       </div>
       <div class="input-wrap">
         <svg class="input-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
-        <input type="text" id="filter-only" placeholder="only exact phrase (e.g. Among Us)" aria-label="Show only exact phrase" />
+        <input type="text" id="filter-only" placeholder="only exact phrase (e.g. 1080p, 2160p)" aria-label="Show only exact phrase" />
       </div>
     </div>
     <div class="filter-row">
       <div class="input-wrap">
         <svg class="input-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
-        <input type="text" id="filter-except" placeholder="except exact phrase (e.g. Killer Among Us)" aria-label="Exclude exact phrase" />
+        <input type="text" id="filter-except" placeholder="except exact phrase (e.g. cam, telesync)" aria-label="Exclude exact phrase" />
+      </div>
+    </div>
+    <div class="filter-row">
+      <div class="input-wrap" style="flex: 2;">
+        <svg class="input-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/></svg>
+        <input type="number" id="filter-hide-count" placeholder="Number of links to hide (un-copyable)..." min="0" aria-label="Number of items to exclude" />
+      </div>
+      <div class="input-wrap" style="flex: 1;">
+        <select id="filter-hide-position" aria-label="Exclusion target direction">
+          <option value="top">From Top</option>
+          <option value="bottom">From Bottom (Last)</option>
+        </select>
+      </div>
+    </div>
+    <div class="filter-row">
+      <div class="input-wrap" style="flex: 2;">
+        <svg class="input-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 3H5a2 2 0 0 0-2 2v4m6-6h10a2 2 0 0 1 2 2v4M9 3v18m0 0h10a2 2 0 0 0 2-2v-4M9 21H5a2 2 0 0 1-2-2v-4m0 0h18"/></svg>
+        <input type="number" id="split-count" placeholder="Split filtered links into N groups..." min="2" max="100" aria-label="Number of groups to split into" />
       </div>
     </div>
   </section>
 
-  <!-- Status bar -->
   <div class="status-bar">
     <span class="status-dot connected" id="status-dot"></span>
-    <span class="status-label connected" id="status-label">Local Storage Active</span>
+    <span class="status-label connected" id="status-label">Local Vault Active</span>
     <span class="status-count" id="status-count">0 / 0 shown</span>
   </div>
 
-  <!-- Action bar -->
   <div class="action-bar">
     <button class="btn" id="btn-copy-all" onclick="handleCopyAll()">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect width="14" height="14" x="8" y="8" rx="2"/><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"/></svg>
@@ -613,20 +602,22 @@
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 20h20M6 20V10l6-8 6 8v10"/><path d="M10 20v-5h4v5"/></svg>
       Dedupe
     </button>
-    <button class="btn" id="sync-btn" onclick="handleSync()">
-      <svg id="sync-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 2v6h-6"/><path d="M3 12a9 9 0 0 1 15-6.7L21 8"/><path d="M3 22v-6h6"/><path d="M21 12a9 9 0 0 1-15 6.7L3 16"/></svg>
-      Reload
+    <button class="btn" onclick="loadLinks(true)">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 2v6h-6"/><path d="M3 12a9 9 0 0 1 15-6.7L21 8"/><path d="M3 22v-6h6"/><path d="M21 12a9 9 0 0 1-15 6.7L3 16"/></svg>
+      Refresh
+    </button>
+    <button class="btn btn-danger" onclick="handlePurgeFiltered()">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18M19 6l-1 14H6L5 6M10 11v6M14 11v6M9 6V4h6v2"/><line x1="4" y1="20" x2="20" y2="4"/></svg>
+      Purge Filtered
     </button>
     <button class="btn btn-danger" onclick="handlePurge()">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M8.5 14.5A2.5 2.5 0 0 0 11 12c0-1.38-.5-2-1-3-1.072-2.143-.224-4.054 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 1 1-14 0c0-1.153.433-2.294 1-3a2.5 2.5 0 0 0 2.5 2.5z"/></svg>
-      Purge
+      Purge Vault
     </button>
   </div>
 
-  <!-- Link list -->
   <div id="link-container"></div>
 
-  <!-- Dedupe priority -->
   <details>
     <summary>
       <svg class="chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m9 18 6-6-6-6"/></svg>
@@ -636,11 +627,7 @@
       <p class="hint">
         When duplicate episodes are found, the copy whose link contains the highest-ranking priority word is kept. Use arrows to rank.
       </p>
-      
-      <!-- Priority Words interactive list -->
       <div id="priority-container" class="priority-list"></div>
-      
-      <!-- Add new priority -->
       <div class="add-btn-row">
         <div class="input-wrap" style="flex: 1;">
           <input type="text" id="new-priority-word" placeholder="Add priority keyword..." aria-label="Add priority word" style="padding-left:0.75rem" onkeydown="if(event.key==='Enter') addPriorityWord()" />
@@ -650,11 +637,9 @@
           Add
         </button>
       </div>
-
     </div>
   </details>
 
-  <!-- Add manually -->
   <details id="add-panel">
     <summary>
       <svg class="chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m9 18 6-6-6-6"/></svg>
@@ -680,7 +665,6 @@
     </div>
   </details>
 
-  <!-- Browser integration -->
   <details>
     <summary>
       <svg class="chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m9 18 6-6-6-6"/></svg>
@@ -689,11 +673,11 @@
     <div class="collapsible-body">
       <p class="hint">
         Drag the button below to your bookmarks bar. On any page with magnet
-        links, click it to scan the page. It will automatically open this Vault and save them locally.
+        links, click it to scan the page and send every magnet directly to this Vault instance via URL.
       </p>
       <a id="bookmarklet-btn" href="#" class="bookmarklet-link" draggable="true" onclick="return false">
         <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 12c-2-3-7-5-9-2s1 8 4 9c1.5.5 3-1 5-7zm0 0c2-3 7-5 9-2s-1 8-4 9c-1.5.5-3-1-5-7z"/></svg>
-        + Save to Magnet Vault
+        + Send to Vault
       </a>
       <p class="bookmarklet-label">Bookmarklet source</p>
       <pre class="bm-code" id="bm-code-pre"></pre>
@@ -702,17 +686,97 @@
 
 </div>
 
-<!-- Toast stack -->
 <div id="toast-stack"></div>
 
 <script>
-// ── State ─────────────────────────────────────────────────────────────────
+const VAULT_STORAGE_KEY = 'magnet-vault-data';
+const PRIO_STORAGE_KEY = 'magnet-vault-priority';
+
 let links = [];
 let priorityWords = ['repack', 'proper', '2160p', '1080p'];
-let syncingState = false;
 
-const PRIO_STORAGE_KEY = 'magnet-vault-priority';
-const VAULT_STORAGE_KEY = 'magnet_vault_links_local';
+let selectedIds = new Set();
+let longPressTimer = null;
+let longPressed = false;
+
+document.addEventListener('DOMContentLoaded', () => {
+  const container = document.getElementById('link-container');
+  if (container) {
+    container.addEventListener('mousedown', startPress);
+    container.addEventListener('touchstart', startPress, { passive: true });
+    container.addEventListener('mouseup', endPress);
+    container.addEventListener('touchend', endPress);
+    container.addEventListener('mouseleave', endPress);
+    container.addEventListener('click', handleRowClick);
+  }
+  
+  loadPriority();
+  handleImportHash();
+  setupBookmarklet();
+  loadLinks();
+});
+
+// Watch for changes from other tabs
+window.addEventListener('storage', (e) => {
+  if (e.key === VAULT_STORAGE_KEY) {
+    loadLinks(true); // reload quietly
+  }
+});
+
+function startPress(e) {
+  if (e.target.closest('.link-actions')) return; 
+  const row = e.target.closest('.link-row');
+  if (!row) return;
+
+  longPressed = false;
+  const id = String(row.dataset.id);
+
+  if (selectedIds.size > 0) return;
+  longPressTimer = setTimeout(() => {
+    longPressed = true;
+    toggleSelection(id);
+    if (navigator.vibrate) navigator.vibrate(40); 
+  }, 550);
+}
+
+function endPress() { clearTimeout(longPressTimer); }
+
+function handleRowClick(e) {
+  if (e.target.closest('.link-actions')) return;
+  const row = e.target.closest('.link-row');
+  if (!row) return;
+  const id = String(row.dataset.id);
+
+  if (longPressed) {
+    e.preventDefault(); e.stopPropagation();
+    longPressed = false; return;
+  }
+  if (selectedIds.size > 0) {
+    e.preventDefault(); e.stopPropagation();
+    toggleSelection(id);
+  }
+}
+
+function updateSelectionButton() {
+  const copyAllBtn = document.getElementById('btn-copy-all');
+  if (!copyAllBtn) return;
+  if (selectedIds.size > 0) {
+    copyAllBtn.innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect width="14" height="14" x="8" y="8" rx="2"/><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"/></svg> Copy Selected (${selectedIds.size})`;
+    copyAllBtn.classList.add('btn-primary');
+  } else {
+    copyAllBtn.innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect width="14" height="14" x="8" y="8" rx="2"/><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"/></svg> Copy All`;
+    copyAllBtn.classList.remove('btn-primary');
+  }
+}
+
+function toggleSelection(id) {
+  if (selectedIds.has(id)) selectedIds.delete(id);
+  else selectedIds.add(id);
+  
+  const row = document.querySelector(`.link-row[data-id="${id}"]`);
+  if (row) row.classList.toggle('selected', selectedIds.has(id));
+  updateSelectionButton();
+}
 
 function loadPriority() {
   try {
@@ -720,108 +784,73 @@ function loadPriority() {
     if (raw) priorityWords = JSON.parse(raw);
   } catch { loadDefaultPriority(); }
 }
-function loadDefaultPriority() {
-  priorityWords = ['repack', 'proper', '2160p', '1080p'];
-}
-function savePriority() {
-  try { localStorage.setItem(PRIO_STORAGE_KEY, JSON.stringify(priorityWords)); } catch {}
-}
+function loadDefaultPriority() { priorityWords = ['repack', 'proper', '2160p', '1080p']; }
+function savePriority() { try { localStorage.setItem(PRIO_STORAGE_KEY, JSON.stringify(priorityWords)); } catch {} }
 
-loadPriority();
-
+// ── Local Storage Data Handling ───────────────────────────────────────────────
 function generateId() {
-  return typeof crypto !== 'undefined' && crypto.randomUUID
-    ? crypto.randomUUID()
-    : Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
+  return Date.now().toString(36) + Math.random().toString(36).substr(2, 5);
 }
 
-// ── LocalStorage DB Helpers ───────────────────────────────────────────────────
-function localFetchAll() {
+function loadLinks(isRefresh = false) {
   try {
     const raw = localStorage.getItem(VAULT_STORAGE_KEY);
-    return raw ? JSON.parse(raw) : [];
-  } catch {
-    return [];
+    links = raw ? JSON.parse(raw) : [];
+    if (isRefresh) pushToast('Refreshed from storage', 'ok');
+  } catch(e) {
+    links = [];
+    pushToast('Failed to read from local storage.', 'error');
   }
+  render();
 }
 
-function localSave(arr) {
+function saveLinks(newLinks) {
   try {
-    localStorage.setItem(VAULT_STORAGE_KEY, JSON.stringify(arr));
-  } catch (e) {
-    pushToast('Failed to save to local storage (Storage might be full)', 'error');
-  }
-}
-
-async function localInsert(records) {
-  if (!records.length) return [];
-  const current = localFetchAll();
-  const newLinks = records.map(rec => ({
-    id: generateId(),
-    title: rec.title,
-    magnet: rec.magnet,
-    createdAt: new Date().toISOString()
-  }));
-  // Add new links to the front
-  localSave([...newLinks, ...current]);
-  return newLinks;
-}
-
-async function localDelete(ids) {
-  if (!ids.length) return;
-  const current = localFetchAll();
-  const idSet = new Set(ids);
-  const filtered = current.filter(l => !idSet.has(l.id));
-  localSave(filtered);
-}
-
-async function localPurge() {
-  localStorage.removeItem(VAULT_STORAGE_KEY);
-}
-
-// ── Sync / Load (Live Pull from Local) ───────────────────────────────────────
-async function fetchLinks() {
-  setSyncing(true);
-  try {
-    const fetched = localFetchAll();
-    // Sort by newest first
-    links = fetched.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+    localStorage.setItem(VAULT_STORAGE_KEY, JSON.stringify(newLinks));
+    links = newLinks;
     render();
   } catch(e) {
-    pushToast('Load failed: ' + e.message, 'error');
-  } finally {
-    setSyncing(false);
+    pushToast('Storage full or unavailable!', 'error');
+    console.error(e);
   }
 }
 
-// Intercept bookmarklet data passed in URL hash
-async function handleHashImport() {
-  const hash = window.location.hash;
-  if (hash.startsWith('#import=')) {
+// ── Hash Import Logic ────────────────────────────────────────────────────────
+function handleImportHash() {
+  if (window.location.hash.startsWith('#import=')) {
     try {
-      const raw = decodeURIComponent(hash.substring(8));
-      const importedLinks = JSON.parse(raw);
+      const importStr = decodeURIComponent(window.location.hash.substring(8));
+      const importedLinks = JSON.parse(importStr);
       
       if (Array.isArray(importedLinks) && importedLinks.length > 0) {
-        // Filter out existing exact magnets to prevent spam
-        const existingUrls = new Set(localFetchAll().map(l => l.magnet));
-        const toAdd = importedLinks.filter(l => !existingUrls.has(l.magnet));
+        const raw = localStorage.getItem(VAULT_STORAGE_KEY);
+        let currentLinks = raw ? JSON.parse(raw) : [];
+        const existingUrls = new Set(currentLinks.map(l => l.magnet));
         
-        if (toAdd.length > 0) {
-          const newLinks = await localInsert(toAdd);
-          links = [...newLinks, ...links];
-          render();
-          pushToast(`Imported ${newLinks.length} new link(s) via bookmarklet!`, 'ok');
+        const newItems = importedLinks
+          .filter(l => !existingUrls.has(l.magnet))
+          .map(l => ({
+            id: generateId(),
+            title: l.title || parseMagnetTitle(l.magnet) || '(untitled)',
+            magnet: l.magnet,
+            createdAt: new Date().toISOString()
+          }));
+          
+        if (newItems.length > 0) {
+          currentLinks = [...newItems, ...currentLinks];
+          localStorage.setItem(VAULT_STORAGE_KEY, JSON.stringify(currentLinks));
+          links = currentLinks;
+          pushToast(`Imported ${newItems.length} new link(s)!`, 'ok');
         } else {
-          pushToast(`Received ${importedLinks.length} link(s), but they were all duplicates.`, 'ok');
+          pushToast('Imported links already exist in vault.', 'ok');
         }
       }
     } catch (e) {
-      pushToast('Failed to parse imported links from bookmarklet.', 'error');
+      console.error(e);
+      pushToast('Failed to import links from URL.', 'error');
     }
-    
-    // Clear the hash so refreshing the page doesn't re-import
-    window.history.replaceState(null, '', window.location.pathname + window.location.search);
+    // Clean up the URL hash
+    history.replaceState(null, null, window.location.pathname + window.location.search);
   }
 }
 
@@ -853,9 +882,7 @@ function stripShowName(title) {
   if (!title) return '';
   let name = title.replace(/[._]+/g, ' ');
   const seMatch = name.match(/\b(s\d{1,4}[\s._-]*e\d{1,4}|season[\s._-]*\d{1,4}|s\d{1,4}\b|\d{1,2}x\d{1,4})/i);
-  if (seMatch && seMatch.index !== undefined) {
-    name = name.slice(0, seMatch.index);
-  }
+  if (seMatch && seMatch.index !== undefined) name = name.slice(0, seMatch.index);
   return name.replace(/\s+/g, ' ').trim().toLowerCase();
 }
 
@@ -866,67 +893,93 @@ function episodeKey(title) {
   return show || title.toLowerCase().trim();
 }
 
-// ── Filtering (Including Exact "Except" and "Only" Phrase Filters) ──────────
+// ── Filtering & Exclusions ──────────────────────────────────────────────────
 function getFiltered() {
   const show  = (document.getElementById('filter-show').value  || '').trim().toLowerCase();
   const terms = (document.getElementById('filter-term').value  || '').trim().toLowerCase().split(/\s+/).filter(Boolean);
   const orTerms = (document.getElementById('filter-or').value  || '').trim().split(/\s+/).map(t=>t.trim().toLowerCase()).filter(Boolean);
-  const onlyPhrase = (document.getElementById('filter-only').value || '').trim().toLowerCase();
-  const exceptPhrase = (document.getElementById('filter-except').value || '').trim().toLowerCase();
+  const onlyPhrases = (document.getElementById('filter-only').value || '').split(',').map(p => p.trim().toLowerCase()).filter(Boolean);
+  const exceptPhrases = (document.getElementById('filter-except').value || '').split(',').map(p => p.trim().toLowerCase()).filter(Boolean);
 
-  return links.filter(l => {
+  let result = links.filter(l => {
     const rawTitle = (l.title || '').toLowerCase();
-
-    // Exact phrase inclusion check (Only show matching phrase)
-    if (onlyPhrase) {
-      if (!rawTitle.includes(onlyPhrase)) return false;
-    }
-
-    // Exact phrase exclusion check (Except exclude matching phrase)
-    if (exceptPhrase) {
-      if (rawTitle.includes(exceptPhrase)) return false;
-    }
-
-    // hf is the full string (title + magnet) used for general keyword searches
+    if (onlyPhrases.length > 0 && !onlyPhrases.some(phrase => rawTitle.includes(phrase))) return false;
+    if (exceptPhrases.length > 0 && exceptPhrases.some(phrase => rawTitle.includes(phrase))) return false;
+    
     const hf = `${l.title} ${l.magnet}`.toLowerCase();
-    
-    if (show) {
-      const cn = stripShowName(l.title);
-      // STRICT MATCH: Only check the stripped show name. 
-      if (!cn.includes(show)) return false;
-    }
-    
-    if (terms.length) {
-      for (const t of terms) {
-        if (!hf.includes(t)) return false;
-      }
-    }
+    if (show) { const cn = stripShowName(l.title); if (!cn.includes(show)) return false; }
+    if (terms.length) { for (const t of terms) if (!hf.includes(t)) return false; }
     if (orTerms.length && !orTerms.some(t => hf.includes(t))) return false;
     
     return true;
   });
+
+  const hideCount = parseInt(document.getElementById('filter-hide-count').value, 10);
+  const hidePos = document.getElementById('filter-hide-position').value;
+  if (!isNaN(hideCount) && hideCount > 0) {
+    if (hidePos === 'top') result = result.slice(hideCount);
+    else if (hidePos === 'bottom') result = result.slice(0, Math.max(0, result.length - hideCount));
+  }
+
+  return result;
 }
 
 function isFilterActive() {
-  return ['filter-show','filter-term','filter-or','filter-only','filter-except'].some(id => (document.getElementById(id).value||'').trim() !== '');
+  const textFiltersActive = ['filter-show','filter-term','filter-or','filter-only','filter-except'].some(id => (document.getElementById(id).value||'').trim() !== '');
+  const hideCount = parseInt(document.getElementById('filter-hide-count').value, 10);
+  return textFiltersActive || (!isNaN(hideCount) && hideCount > 0);
+}
+
+function getSplitCount() {
+  const val = parseInt(document.getElementById('split-count').value, 10);
+  return (!isNaN(val) && val >= 2) ? val : 0;
+}
+
+function splitIntoGroups(arr, n) {
+  if (!n || n < 1) return [arr];
+  const groups = []; const size = Math.ceil(arr.length / n);
+  for (let i = 0; i < n; i++) groups.push(arr.slice(i * size, (i + 1) * size));
+  return groups.filter((g, idx) => g.length > 0 || idx < arr.length);
 }
 
 // ── Render UI ─────────────────────────────────────────────────────────────
 function render() {
   const filtered = getFiltered();
+  const splitN = getSplitCount();
 
   document.getElementById('status-count').textContent = `${filtered.length} / ${links.length} shown`;
-
-  // Dedupe label updates
   document.getElementById('btn-dedupe').childNodes[1].textContent = isFilterActive() ? ' Dedupe (filtered)' : ' Dedupe';
 
-  // Link list container
+  updateSelectionButton();
+
   const container = document.getElementById('link-container');
-  if (filtered.length === 0) {
-    container.innerHTML = `<div class="empty-state">✦ No magnet links found. Add some below! ✦</div>`;
+  if (splitN === 0) {
+    if (filtered.length === 0) { container.innerHTML = `<div class="empty-state">✦ No magnet links found. Add some below! ✦</div>`; return; }
+    container.innerHTML = `<ul class="link-list-wrap" role="list">${filtered.map(linkRowHTML).join('')}</ul>`;
     return;
   }
-  container.innerHTML = `<ul class="link-list-wrap" role="list">${filtered.map(linkRowHTML).join('')}</ul>`;
+  if (filtered.length === 0) { container.innerHTML = `<div class="empty-state">✦ No magnet links match filters. ✦</div>`; return; }
+  const groups = splitIntoGroups(filtered, splitN);
+  container.innerHTML = groups.map((group, idx) => renderGroupBlock(group, idx + 1, groups.length)).join('');
+}
+
+function renderGroupBlock(items, groupNum, totalGroups) {
+  const headerLabel = `Group ${groupNum} <span style="font-weight:400;color:var(--muted);font-size:0.65rem;">of ${totalGroups}</span>`;
+  const countBadge = `<span class="group-badge">${items.length} link${items.length !== 1 ? 's' : ''}</span>`;
+  const listHTML = items.length === 0 ? `<div class="empty-state empty-state-small">No links.</div>` : `<ul class="link-list-wrap" role="list">${items.map(linkRowHTML).join('')}</ul>`;
+
+  return `
+  <div class="group-block">
+    <div class="group-header">
+      <div class="group-title">🦋 ${headerLabel} ${countBadge}</div>
+      <div class="group-actions">
+        <button class="group-copy-btn" onclick='copyGroupMagnets(${JSON.stringify(items.map(l => l.magnet))}, ${groupNum})'>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect width="14" height="14" x="8" y="8" rx="2"/><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"/></svg> Copy Group ${groupNum}
+        </button>
+      </div>
+    </div>
+    ${listHTML}
+  </div>`;
 }
 
 function linkRowHTML(l) {
@@ -935,14 +988,13 @@ function linkRowHTML(l) {
   const date = new Date(l.createdAt).toLocaleString();
   const titleEsc = escHtml(l.title || '(untitled)');
   const magnetEsc = escHtml(l.magnet);
+  const isSelected = selectedIds.has(String(l.id));
   
   return `
-  <li class="link-row">
+  <li class="link-row ${isSelected ? 'selected' : ''}" data-id="${l.id}">
     <div class="link-row-inner">
       <div class="link-meta">
-        <div class="link-title-wrap">
-          <span class="link-title">${titleEsc}</span>${epBadge}
-        </div>
+        <div class="link-title-wrap"><span class="link-title">${titleEsc}</span>${epBadge}</div>
         <p class="link-magnet">${magnetEsc}</p>
         <p class="link-date">${escHtml(date)}</p>
       </div>
@@ -958,90 +1010,54 @@ function linkRowHTML(l) {
   </li>`;
 }
 
-function escHtml(s) {
-  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+function escHtml(s) { return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+
+function copyGroupMagnets(magnets, groupNum) {
+  if (!magnets || !magnets.length) { pushToast('Nothing to copy', 'error'); return; }
+  copyText(magnets.join('\n'), `Copied Group ${groupNum} — ${magnets.length} link(s)`);
 }
 
-// ── Priority List Render ──────────────────────────────────────────────────
 function renderPriorityList() {
   const container = document.getElementById('priority-container');
-  if(!priorityWords.length) {
-      container.innerHTML = '<div class="empty-state" style="padding: 1rem; font-size: 0.7rem;">No priority words set.</div>';
-      return;
-  }
+  if(!priorityWords.length) { container.innerHTML = '<div class="empty-state" style="padding: 1rem; font-size: 0.7rem;">No priority words set.</div>'; return; }
   container.innerHTML = priorityWords.map((word, index) => `
     <div class="priority-item">
       <span class="priority-word">${escHtml(word.toUpperCase())}</span>
-      <button class="prio-btn" onclick="movePriority(${index}, -1)" ${index === 0 ? 'disabled' : ''} aria-label="Move up">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="m18 15-6-6-6 6"/></svg>
-      </button>
-      <button class="prio-btn" onclick="movePriority(${index}, 1)" ${index === priorityWords.length - 1 ? 'disabled' : ''} aria-label="Move down">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="m6 9 6 6 6-6"/></svg>
-      </button>
-      <button class="prio-btn del" onclick="removePriority(${index})" aria-label="Remove">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M18 6 6 18M6 6l12 12"/></svg>
-      </button>
+      <button class="prio-btn" onclick="movePriority(${index}, -1)" ${index === 0 ? 'disabled' : ''}><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="m18 15-6-6-6 6"/></svg></button>
+      <button class="prio-btn" onclick="movePriority(${index}, 1)" ${index === priorityWords.length - 1 ? 'disabled' : ''}><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="m6 9 6 6 6-6"/></svg></button>
+      <button class="prio-btn del" onclick="removePriority(${index})"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M18 6 6 18M6 6l12 12"/></svg></button>
     </div>
   `).join('');
 }
 
 function movePriority(index, dir) {
   if (index + dir < 0 || index + dir >= priorityWords.length) return;
-  const temp = priorityWords[index];
-  priorityWords[index] = priorityWords[index + dir];
-  priorityWords[index + dir] = temp;
-  savePriority();
-  renderPriorityList();
+  const temp = priorityWords[index]; priorityWords[index] = priorityWords[index + dir]; priorityWords[index + dir] = temp;
+  savePriority(); renderPriorityList();
 }
 
-function removePriority(index) {
-  priorityWords.splice(index, 1);
-  savePriority();
-  renderPriorityList();
-}
+function removePriority(index) { priorityWords.splice(index, 1); savePriority(); renderPriorityList(); }
 
 function addPriorityWord() {
-  const input = document.getElementById('new-priority-word');
-  const word = input.value.trim().toLowerCase();
-  if (word && !priorityWords.includes(word)) {
-      priorityWords.push(word);
-      savePriority();
-      renderPriorityList();
-      input.value = '';
-  }
+  const input = document.getElementById('new-priority-word'); const word = input.value.trim().toLowerCase();
+  if (word && !priorityWords.includes(word)) { priorityWords.push(word); savePriority(); renderPriorityList(); input.value = ''; }
 }
 
-// ── Toast Stack ───────────────────────────────────────────────────────────
 function pushToast(message, kind = 'ok') {
-  const stack = document.getElementById('toast-stack');
-  const el = document.createElement('div');
-  el.className = `toast ${kind}`;
-  const icon = kind === 'ok'
-    ? `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M20 6 9 17l-5-5"/></svg>`
-    : `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M18 6 6 18M6 6l12 12"/></svg>`;
-  el.innerHTML = `${icon}<span>${escHtml(message)}</span>`;
-  stack.appendChild(el);
-  setTimeout(() => el.remove(), 3000);
+  const stack = document.getElementById('toast-stack'); const el = document.createElement('div'); el.className = `toast ${kind}`;
+  const icon = kind === 'ok' ? `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M20 6 9 17l-5-5"/></svg>` : `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M18 6 6 18M6 6l12 12"/></svg>`;
+  el.innerHTML = `${icon}<span>${escHtml(message)}</span>`; stack.appendChild(el); setTimeout(() => el.remove(), 3000);
 }
 
-// ── UI Actions & Sync Hooks ───────────────────────────────────────────────
-function setSyncing(on) {
-  syncingState = on;
-  const icon = document.getElementById('sync-icon');
-  const btn = document.getElementById('sync-btn');
-  btn.disabled = on;
-  if (on) {
-    icon.classList.add('spin');
-  } else {
-    icon.classList.remove('spin');
-  }
-}
-
-function copyText(text, label = 'Copied') {
-  navigator.clipboard.writeText(text).then(() => pushToast(label)).catch(() => pushToast('Clipboard copy failed', 'error'));
-}
+function copyText(text, label = 'Copied') { navigator.clipboard.writeText(text).then(() => pushToast(label)).catch(() => pushToast('Clipboard copy failed', 'error')); }
 
 function handleCopyAll() {
+  if (selectedIds.size > 0) {
+    const selectedLinks = links.filter(l => selectedIds.has(String(l.id)));
+    if (!selectedLinks.length) { pushToast('Nothing to copy', 'error'); return; }
+    copyText(selectedLinks.map(l => l.magnet).join('\n'), `Copied ${selectedLinks.length} selected link(s)!`);
+    selectedIds.clear(); render(); return;
+  }
   const filtered = getFiltered();
   if (!filtered.length) { pushToast('Nothing to copy', 'error'); return; }
   copyText(filtered.map(l => l.magnet).join('\n'), `Copied ${filtered.length} link(s)`);
@@ -1053,30 +1069,20 @@ function handleSortEpisode() {
     if (!sa && !sb) return a.title.localeCompare(b.title);
     if (!sa) return 1; if (!sb) return -1;
     const sc = stripShowName(a.title).localeCompare(stripShowName(b.title));
-    if (sc !== 0) return sc;
-    if (sa.season !== sb.season) return sa.season - sb.season;
-    return sa.episode - sb.episode;
+    if (sc !== 0) return sc; if (sa.season !== sb.season) return sa.season - sb.season; return sa.episode - sb.episode;
   });
-  render(); pushToast('Sorted by season + episode');
+  saveLinks(links); pushToast('Sorted by season + episode');
 }
 
-async function handleDedupe() {
+function handleDedupe() {
   const score = item => {
     const hay = `${item.title} ${item.magnet}`.toLowerCase();
-    for (let i = 0; i < priorityWords.length; i++) {
-        if (hay.includes(priorityWords[i])) return priorityWords.length - i;
-    }
-    return 0;
+    for (let i = 0; i < priorityWords.length; i++) if (hay.includes(priorityWords[i])) return priorityWords.length - i; return 0;
   };
-  
   const scope = isFilterActive() ? getFiltered() : links;
   const scopeIds = new Set(scope.map(l => l.id));
   const groups = new Map();
-  
-  for (const item of scope) {
-    const key = episodeKey(item.title);
-    (groups.get(key) || groups.set(key, []).get(key)).push(item);
-  }
+  for (const item of scope) { const key = episodeKey(item.title); (groups.get(key) || groups.set(key, []).get(key)).push(item); }
   
   const removeIds = [];
   for (const arr of groups.values()) {
@@ -1084,87 +1090,56 @@ async function handleDedupe() {
     let keeper = arr[0];
     for (const item of arr) {
       const s = score(item), ks = score(keeper);
-      if (s > ks || (s === ks && item.createdAt > keeper.createdAt)) keeper = item;
+      if (s > ks || (s === ks && item.createdAt < keeper.createdAt)) keeper = item;
     }
     for (const item of arr) if (item.id !== keeper.id) removeIds.push(item.id);
   }
   
   if (!removeIds.length) { pushToast('No duplicates found'); return; }
 
-  setSyncing(true);
-  try {
-    await localDelete(removeIds);
-    const rm = new Set(removeIds);
-    links = links.filter(l => !rm.has(l.id) || !scopeIds.has(l.id));
-    render();
-    pushToast(`Removed ${removeIds.length} duplicate(s)!`, 'ok');
-  } catch(e) {
-    pushToast('Dedupe failed: ' + e.message, 'error');
-  } finally {
-    setSyncing(false);
-  }
+  const rm = new Set(removeIds);
+  const newLinks = links.filter(l => !rm.has(l.id) || !scopeIds.has(l.id));
+  saveLinks(newLinks);
+  pushToast(`Removed ${removeIds.length} duplicate(s)!`, 'ok');
 }
 
-function handleSync() {
-  fetchLinks();
-  pushToast('Reloaded from local storage', 'ok');
+function handlePurgeFiltered() {
+  const filtered = getFiltered();
+  if (!filtered.length) { pushToast('No filtered items to drop', 'error'); return; }
+  if (!confirm(`Purge ONLY the ${filtered.length} visible filtered link(s)? This cannot be undone.`)) return;
+
+  const dropSet = new Set(filtered.map(l => l.id));
+  const newLinks = links.filter(l => !dropSet.has(l.id));
+  saveLinks(newLinks);
+  pushToast(`Purged ${filtered.length} filtered items`, 'ok');
 }
 
-async function handlePurge() {
+function handlePurge() {
   if (!links.length) { pushToast('Vault already empty', 'error'); return; }
-  if (!confirm(`Purge ALL ${links.length} link(s) from Local Storage? This cannot be undone.`)) return;
-  
-  setSyncing(true);
-  try {
-    await localPurge();
-    links = [];
-    render();
-    pushToast('Vault purged', 'ok');
-  } catch(e) {
-    pushToast('Purge failed: ' + e.message, 'error');
-  } finally {
-    setSyncing(false);
-  }
+  if (!confirm(`Purge ALL ${links.length} link(s)? This cannot be undone.`)) return;
+  saveLinks([]);
+  pushToast('Vault purged', 'ok');
 }
 
-async function handleDelete(id) {
-  setSyncing(true);
-  try {
-    await localDelete([id]);
-    links = links.filter(l => l.id !== id);
-    render();
-    pushToast('Link deleted', 'ok');
-  } catch(e) {
-    pushToast('Delete failed: ' + e.message, 'error');
-  } finally {
-    setSyncing(false);
-  }
+function handleDelete(id) {
+  const newLinks = links.filter(l => l.id !== String(id));
+  saveLinks(newLinks);
+  pushToast('Link deleted', 'ok');
 }
 
-async function handleAdd() {
-  const magnetEl = document.getElementById('add-magnet');
-  const titleEl  = document.getElementById('add-title');
+function handleAdd() {
+  const magnetEl = document.getElementById('add-magnet'); const titleEl = document.getElementById('add-title');
   const m = (magnetEl.value || '').trim();
   if (!isValidMagnet(m)) { pushToast('Invalid magnet URL', 'error'); return; }
   const title = (titleEl.value || '').trim() || parseMagnetTitle(m) || '(untitled)';
   
-  setSyncing(true);
-  try {
-    const payload = [{ title, magnet: m }];
-    const inserted = await localInsert(payload);
-    links.unshift(...inserted);
-    titleEl.value = '';
-    magnetEl.value = '';
-    render();
-    pushToast('Link added!', 'ok');
-  } catch(e) {
-    pushToast('Add failed: ' + e.message, 'error');
-  } finally {
-    setSyncing(false);
-  }
+  const newLink = { id: generateId(), title: title, magnet: m, createdAt: new Date().toISOString() };
+  saveLinks([newLink, ...links]);
+  titleEl.value = ''; magnetEl.value = '';
+  pushToast('Link added to Vault!', 'ok');
 }
 
-async function handlePasteAdd() {
+function handlePasteAdd() {
   const blob = (document.getElementById('add-magnet').value || '').trim();
   const candidates = blob.split(/\s+/).map(s => s.trim()).filter(s => isValidMagnet(s));
   if (!candidates.length) { pushToast('No valid magnet links found', 'error'); return; }
@@ -1174,89 +1149,44 @@ async function handlePasteAdd() {
   const skipped = candidates.length - toAdd.length;
   if (!toAdd.length) { pushToast(`All ${skipped} link(s) already in vault`, 'ok'); return; }
 
-  setSyncing(true);
-  try {
-    const payload = toAdd.map(s => ({
-      title: parseMagnetTitle(s) || s.slice(0, 160),
-      magnet: s,
-    }));
-    const newLinks = await localInsert(payload);
-    links = [...newLinks, ...links];
-    document.getElementById('add-magnet').value = '';
-    document.getElementById('add-title').value  = '';
-    render();
-    pushToast(`Added ${newLinks.length} link(s)${skipped ? `, skipped ${skipped} duplicate(s)` : ''}`, 'ok');
-  } catch(e) {
-    pushToast('Paste failed: ' + e.message, 'error');
-  } finally {
-    setSyncing(false);
-  }
+  const newItems = toAdd.map(s => ({
+    id: generateId(), title: parseMagnetTitle(s) || s.slice(0, 160), magnet: s, createdAt: new Date().toISOString()
+  }));
+  saveLinks([...newItems, ...links]);
+  document.getElementById('add-magnet').value = ''; document.getElementById('add-title').value = '';
+  pushToast(`Added ${newItems.length} link(s)${skipped ? `, skipped ${skipped} duplicate(s)` : ''}`, 'ok');
 }
 
 // ── Bookmarklet ───────────────────────────────────────────────────────────
-(function setupBookmarklet() {
-  // Strip off any existing hashes or queries to get a clean base URL for the app
-  const appUrl = window.location.href.split('#')[0].split('?')[0]; 
-  
-  // The bookmarklet grabs magnets, stringifies, encodes them, and opens a new tab pointing to the Vault's URL + hash data
-  const code = `javascript:(function(){
-    var a=[].slice.call(document.querySelectorAll('a[href^="magnet:"]'));
-    if(!a.length){alert('No magnet links found on this page');return;}
-    var l=a.map(function(x){
-      var m=x.href;
-      var dn=(m.match(/[?&]dn=([^&]+)/i)||[])[1]||'';
-      var t=dn?decodeURIComponent(dn.replace(/\\+/g,' ')).replace(/[._]+/g,' ').trim():(x.textContent||'').trim();
-      return{title:t,magnet:m};
-    });
-    var importData = encodeURIComponent(JSON.stringify(l));
-    window.open('${appUrl}#import=' + importData, '_blank');
-  })();`.replace(/\n\s+/g, ''); // Minify for the anchor tag
-
+function setupBookmarklet() {
+  // Grab the exact base URL dynamically so the bookmarklet pushes data back to this exact hosted copy
+  const baseUrl = window.location.href.split('#')[0];
+  const code = `javascript:(function(){var a=[].slice.call(document.querySelectorAll('a[href^="magnet:"]'));if(!a.length){alert('No magnet links found on this page');return;}var l=a.map(function(x){var m=x.href;var dn=(m.match(/[?&]dn=([^&]+)/i)||[])[1]||'';var t=dn?decodeURIComponent(dn.replace(/\\+/g,' ')).replace(/[._]+/g,' ').trim():(x.textContent||'').trim();return{title:t,magnet:m};});var importData = encodeURIComponent(JSON.stringify(l));window.open('${baseUrl}#import=' + importData, '_blank');})();`;
   const btn = document.getElementById('bookmarklet-btn');
-  btn.href = code;
-  btn.setAttribute('draggable', 'true');
-  document.getElementById('bm-code-pre').textContent = code;
-})();
+  if (btn) { btn.href = code; btn.setAttribute('draggable', 'true'); }
+  const pre = document.getElementById('bm-code-pre');
+  if (pre) pre.textContent = code;
+}
 
-// ── Magnet auto-fill title ────────────────────────────────────────────────
 document.getElementById('add-magnet').addEventListener('input', function() {
   const titleEl = document.getElementById('add-title');
-  if (!titleEl.value.trim()) {
-    const parsed = parseMagnetTitle(this.value);
-    if (parsed) titleEl.value = parsed;
-  }
+  if (!titleEl.value.trim()) { const parsed = parseMagnetTitle(this.value); if (parsed) titleEl.value = parsed; }
 });
 
-// ── Filter listeners ──────────────────────────────────────────────────────
-['filter-show','filter-term','filter-or','filter-only','filter-except'].forEach(id => {
-  document.getElementById(id).addEventListener('input', render);
+['filter-show','filter-term','filter-or','filter-only','filter-except', 'filter-hide-count', 'filter-hide-position', 'split-count'].forEach(id => {
+  const el = document.getElementById(id);
+  if (el) { el.addEventListener('input', render); el.addEventListener('change', render); }
 });
 
-// ── Scattered glitter dots (Optimized Generation) ─────────────────────────
 (function spawnGlitter() {
   const colors = ['#db2777','#4f46e5','#8b5cf6','#ec4899','#a78bfa','#3b82f6','#be185d','#e11d48','#f43f5e'];
   for (let i = 0; i < 90; i++) {
-    const el = document.createElement('div');
-    el.className = 'glitter';
-    const chosenColor = colors[Math.floor(Math.random()*colors.length)];
-    el.style.cssText = `
-      left: ${Math.random()*100}vw;
-      top: ${Math.random()*100}vh;
-      background: ${chosenColor};
-      animation-duration: ${1.5 + Math.random()*3}s;
-      animation-delay: ${-Math.random()*3}s;
-      box-shadow: 0 0 7px 3px ${chosenColor}88;
-    `;
+    const el = document.createElement('div'); el.className = 'glitter'; const chosenColor = colors[Math.floor(Math.random()*colors.length)];
+    el.style.cssText = `left: ${Math.random()*100}vw; top: ${Math.random()*100}vh; background: ${chosenColor}; animation-duration: ${1.5 + Math.random()*3}s; animation-delay: ${-Math.random()*3}s; box-shadow: 0 0 7px 3px ${chosenColor}88;`;
     document.body.appendChild(el);
   }
 })();
 
-// ── Initial Connection Check & Render ─────────────────────────────────────
-renderPriorityList();
-fetchLinks().then(() => {
-  // Check if we were opened via the bookmarklet and need to process a hash import
-  handleHashImport();
-});
 </script>
 </body>
 </html>
